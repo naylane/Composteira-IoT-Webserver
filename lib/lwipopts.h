@@ -25,7 +25,7 @@
 #define LWIP_HTTPD_SUPPORT_POST     1  // Habilita suporte a POST, se necessário
 #define LWIP_HTTPD_DYNAMIC_HEADERS 1
 #define HTTPD_USE_CUSTOM_FSDATA 0
-#define LWIP_HTTPD_CGI 0           // Desative CGI para economizar memória
+#define LWIP_HTTPD_CGI 0               // Desative CGI para economizar memória
 #define LWIP_NETIF_HOSTNAME 1
 
 

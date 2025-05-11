@@ -47,6 +47,7 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/lib
     ${PICO_SDK_PATH}/lib/lwip/src/include
     ${PICO_SDK_PATH}/lib/lwip/src/include/arch
     ${PICO_SDK_PATH}/lib/lwip/src/include/lwip

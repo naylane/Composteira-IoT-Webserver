@@ -17,8 +17,8 @@
 #include "src/webserver.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
-#define WIFI_SSID "SEU_SSID"
-#define WIFI_PASSWORD "SUA_SENHA"
+#define WIFI_SSID "Familia-2.4G"
+#define WIFI_PASSWORD "31261112"
 
 // ----------------------------- Escopo de funções ------------------------------
 
