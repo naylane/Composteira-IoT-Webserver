@@ -14,7 +14,7 @@
 #include "setup.h"
 
 
-void webserver_init(void) {
+int webserver_init(void) {
     // Configura o servidor TCP - cria novos PCBs TCP. É o primeiro passo para estabelecer uma conexão TCP.
     struct tcp_pcb *server = tcp_new();
     if (!server) {

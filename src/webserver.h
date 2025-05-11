@@ -5,7 +5,7 @@
 #include "lwip/tcp.h"
 
 // Inicializa o servidor web
-void webserver_init(void);
+int webserver_init(void);
 
 // Função de callback ao aceitar conexões TCP
 static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
