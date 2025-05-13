@@ -13,16 +13,18 @@
 #include "lwip/tcp.h"            // Lightweight IP stack - fornece funções e estruturas para trabalhar com o protocolo TCP
 #include "lwip/netif.h"          // Lightweight IP stack - fornece funções e estruturas para trabalhar com interfaces de rede (netif)
 
-#include "src/setup.h"
+#include "setup.h"
 #include "src/webserver.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
-#define WIFI_SSID "Familia-2.4G"
-#define WIFI_PASSWORD "31261112"
+#define WIFI_SSID "SEU_SSID"
+#define WIFI_PASSWORD "SUA_SENHA"
 
 // ----------------------------- Escopo de funções ------------------------------
 
 void buttons_irq(uint gpio, uint32_t events);
+void update_display();
+void setup_display();
 void gpio_led_bitdog(void);
 void setup_button(uint pin);
 // -------------------------------------------------------------------------------
@@ -71,6 +73,8 @@ int main() {
     setup_button(BUTTON_A);
     setup_button(BUTTON_B);
 
+    setup_display();
+
     while (true) {
         /* 
         * Efetuar o processamento exigido pelo cyw43_driver ou pela stack TCP/IP.
@@ -78,7 +82,33 @@ int main() {
         * quando se utiliza um estilo de sondagem pico_cyw43_arch 
         */
         cyw43_arch_poll(); // Necessário para manter o Wi-Fi ativo
-        sleep_ms(100);     // Reduz o uso da CPU
+        
+        update_display();
+
+        if ((temperatura > 60) || (umidade > 70) || (oxigenio < 15)) {
+            //gpio_put(LED_RED_PIN, 1);
+            //gpio_put(LED_GREEN_PIN, 0);
+            //gpio_put(LED_BLUE_PIN, 0);
+
+            //set_led_matrix(11, pio, sm);
+            //buzzer_tone(50); 
+            //sleep_ms(500);
+            //buzzer_off();      
+        }
+        else if ((40 < temperatura && temperatura < 60) && (50 < umidade && umidade < 70) && (oxigenio > 15)) {
+            //gpio_put(LED_RED_PIN, 0);
+            //gpio_put(LED_GREEN_PIN, 1);
+            //gpio_put(LED_BLUE_PIN, 0);
+            //set_led_matrix(15, pio, sm);
+        }
+        else {
+            //gpio_put(LED_RED_PIN, 0);
+            //gpio_put(LED_GREEN_PIN, 0);
+            //gpio_put(LED_BLUE_PIN, 1);
+            //set_led_matrix(15, pio, sm);
+        }
+
+        sleep_ms(1000);
     }
 
     // Desligar a arquitetura CYW43
@@ -104,6 +134,40 @@ void buttons_irq(uint gpio, uint32_t events) {
             return;
         }
     }
+}
+
+void update_display() {
+    ssd1306_fill(&ssd, !cor);                          // Limpa o display
+    ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);      // Desenha um retângulo
+    char msg_temp[20];
+    sprintf(msg_temp, "Temperatura %d", temperatura);
+    ssd1306_draw_string(&ssd, msg_temp, 8, 6);
+    char msg_umid[20];
+    sprintf(msg_umid, "Umidade %d", umidade);
+    ssd1306_draw_string(&ssd, msg_umid, 8, 18);
+    char msg_oxig[20];
+    sprintf(msg_oxig, "Oxigenio %d", oxigenio);
+    ssd1306_draw_string(&ssd, msg_oxig, 8, 33);
+    
+    ssd1306_send_data(&ssd);                           // Atualiza o display
+    sleep_ms(735);
+}
+
+void setup_display() {
+    // I2C Initialisation. Using it at 400Khz.
+    i2c_init(I2C_PORT, 400 * 1000);
+
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
+    gpio_pull_up(I2C_SDA);                                        // Pull up the data line
+    gpio_pull_up(I2C_SCL);                                        // Pull up the clock line
+    //ssd1306_t ssd;                                              // Inicializa a estrutura do display
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display
+    ssd1306_config(&ssd);                                         // Configura o display
+    ssd1306_send_data(&ssd);                                      // Envia os dados para o display
+    // Limpa o display. O display inicia com todos os pixels apagados.
+    ssd1306_fill(&ssd, false);
+    ssd1306_send_data(&ssd);
 }
 
 // Inicializar os Pinos GPIO para acionamento dos LEDs da BitDogLab
