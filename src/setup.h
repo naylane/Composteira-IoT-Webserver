@@ -1,6 +1,7 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+#include "hardware/pio.h"
 #include "lib/ssd1306.h"
 
 // Definição dos pinos dos LEDs
@@ -18,6 +19,8 @@ static uint32_t last_time_B = 0;    // Tempo da última interrupção do botão 
 #define BUZZER_PIN 10
 
 #define WS2812_PIN 7
+extern PIO pio;
+extern uint sm;
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14

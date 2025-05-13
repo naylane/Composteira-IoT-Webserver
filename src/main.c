@@ -15,6 +15,8 @@
 
 #include "setup.h"
 #include "src/webserver.h"
+#include "lib/ws2812.h"
+#include "ws2812.pio.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
 #define WIFI_SSID "SEU_SSID"
@@ -25,6 +27,7 @@
 void buttons_irq(uint gpio, uint32_t events);
 void update_display();
 void setup_display();
+void setup_matrix();
 void gpio_led_bitdog(void);
 void setup_button(uint pin);
 // -------------------------------------------------------------------------------
@@ -74,6 +77,7 @@ int main() {
     setup_button(BUTTON_B);
 
     setup_display();
+    setup_matrix();
 
     while (true) {
         /* 
@@ -90,7 +94,7 @@ int main() {
             //gpio_put(LED_GREEN_PIN, 0);
             //gpio_put(LED_BLUE_PIN, 0);
 
-            //set_led_matrix(11, pio, sm);
+            set_pattern(pio, sm, 0, "vermelho");
             //buzzer_tone(50); 
             //sleep_ms(500);
             //buzzer_off();      
@@ -168,6 +172,13 @@ void setup_display() {
     // Limpa o display. O display inicia com todos os pixels apagados.
     ssd1306_fill(&ssd, false);
     ssd1306_send_data(&ssd);
+}
+
+void setup_matrix() {
+    uint offset = pio_add_program(pio, &pio_matrix_program);
+    pio_matrix_program_init(pio, sm, offset, WS2812_PIN);
+    clear_matrix(pio, sm);
+    sleep_ms(100);
 }
 
 // Inicializar os Pinos GPIO para acionamento dos LEDs da BitDogLab

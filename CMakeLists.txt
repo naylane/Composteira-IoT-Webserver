@@ -33,7 +33,10 @@ add_executable(${PROJECT_NAME}
         src/webserver.c
         src/setup.c
         lib/ssd1306.c
+        lib/ws2812.c
 )
+
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812.pio)
 
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
@@ -44,6 +47,7 @@ target_link_libraries(${PROJECT_NAME}
         hardware_gpio
         hardware_adc
         hardware_i2c
+        hardware_pio
         pico_cyw43_arch_lwip_threadsafe_background
 )
 
