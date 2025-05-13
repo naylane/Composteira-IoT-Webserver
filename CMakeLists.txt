@@ -31,6 +31,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME}
         src/main.c
         src/webserver.c
+        lib/ssd1306.c
 )
 
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
