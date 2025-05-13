@@ -24,5 +24,10 @@ static uint32_t last_time_B = 0;    // Tempo da última interrupção do botão 
 #define I2C_SCL 15
 #define endereco 0x3C
 extern ssd1306_t ssd;
+extern bool cor;
+
+extern int temperatura;
+extern int umidade;
+extern int oxigenio;
 
 #endif

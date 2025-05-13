@@ -31,6 +31,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME}
         src/main.c
         src/webserver.c
+        src/setup.c
         lib/ssd1306.c
 )
 
