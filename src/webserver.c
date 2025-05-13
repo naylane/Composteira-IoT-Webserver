@@ -53,15 +53,6 @@ void user_request(char **request) {
     else if (strstr(*request, "GET /green_on") != NULL) {
         gpio_put(LED_GREEN_PIN, 1);
     }
-    else if (strstr(*request, "GET /green_off") != NULL) {
-        gpio_put(LED_GREEN_PIN, 0);
-    }
-    else if (strstr(*request, "GET /red_on") != NULL) {
-        gpio_put(LED_RED_PIN, 1);
-    }
-    else if (strstr(*request, "GET /red_off") != NULL) {
-        gpio_put(LED_RED_PIN, 0);
-    }
     else if (strstr(*request, "GET /on") != NULL) {
         cyw43_arch_gpio_put(LED_PIN, 1);
     }
@@ -90,6 +81,7 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
     
     // Leitura da temperatura interna
     //float temperature = temp_read();
+    float temperature = temperatura;;
 
     // Cria a resposta HTML
     char html[1024];
@@ -102,26 +94,24 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
              "<!DOCTYPE html>\n"
              "<html>\n"
              "<head>\n"
-             "<title> Embarcatech - LED Control </title>\n"
+             "<title> Monitoramento da Composteira </title>\n"
              "<style>\n"
-             "body { background-color: #b5e5fb; font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }\n"
+             "body { background-color: #f0f0f0; font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }\n"
              "h1 { font-size: 64px; margin-bottom: 30px; }\n"
-             "button { background-color: LightGray; font-size: 36px; margin: 10px; padding: 20px 40px; border-radius: 10px; }\n"
+             "button { background-color:rgb(187, 255, 170); font-size: 36px; margin: 10px; padding: 20px 40px; border-radius: 10px; }\n"
              ".temperature { font-size: 48px; margin-top: 30px; color: #333; }\n"
              "</style>\n"
              "</head>\n"
+
              "<body>\n"
-             "<h1>Embarcatech: LED Control</h1>\n"
-             "<form action=\"./blue_on\"><button>Ligar Azul</button></form>\n"
-             "<form action=\"./blue_off\"><button>Desligar Azul</button></form>\n"
-             "<form action=\"./green_on\"><button>Ligar Verde</button></form>\n"
-             "<form action=\"./green_off\"><button>Desligar Verde</button></form>\n"
-             "<form action=\"./red_on\"><button>Ligar Vermelho</button></form>\n"
-             "<form action=\"./red_off\"><button>Desligar Vermelho</button></form>\n"
+             "<h1>EmbarcaTech: Monitoramento da Composteira</h1>\n"
+             "<form action=\"./blue_on\"><button>Ativar aeracao</button></form>\n"
+             "<form action=\"./blue_off\"><button>Desativar aeracao</button></form>\n"
+             "<form action=\"./green_on\"><button>Atualizar dados</button></form>\n"
              "<p class=\"temperature\">Temperatura Interna: %.2f &deg;C</p>\n"
              "</body>\n"
              "</html>\n",
-             "temperature");
+             temperature);
 
     // Escreve dados para envio (mas não os envia imediatamente).
     tcp_write(tpcb, html, strlen(html), TCP_WRITE_FLAG_COPY);
