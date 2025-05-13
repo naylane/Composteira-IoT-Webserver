@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = 'build/Composteira_IoT.uf2'
+elf = 'build/Composteira_IoT.elf'
