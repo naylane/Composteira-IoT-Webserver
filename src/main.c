@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"     // Biblioteca para arquitetura Wi-Fi da Pico com CYW43
@@ -32,12 +33,11 @@ void gpio_led_bitdog(void);
 void setup_button(uint pin);
 // -------------------------------------------------------------------------------
 
-// Função principal
-int main() {
-    // Inicializa todos os tipos de bibliotecas stdio padrão presentes que estão ligados ao binário.
-    stdio_init_all();
 
-    // Inicializar os Pinos GPIO para acionamento dos LEDs da BitDogLab
+int main() {
+    // Configurações
+    stdio_init_all();
+    srand(time(NULL));
     gpio_led_bitdog();
 
     // Inicializa a arquitetura do cyw43
@@ -68,12 +68,7 @@ int main() {
     }
 
     webserver_init();
-    
-    // Inicializa o conversor ADC
-    adc_init();
-    adc_set_temp_sensor_enabled(true);
 
-    setup_button(BUTTON_A);
     setup_button(BUTTON_B);
 
     setup_display();
@@ -90,26 +85,19 @@ int main() {
         update_display();
 
         if ((temperatura > 60) || (umidade > 70) || (oxigenio < 15)) {
-            //gpio_put(LED_RED_PIN, 1);
-            //gpio_put(LED_GREEN_PIN, 0);
-            //gpio_put(LED_BLUE_PIN, 0);
-
-            set_pattern(pio, sm, 0, "vermelho");
-            //buzzer_tone(50); 
-            //sleep_ms(500);
-            //buzzer_off();      
+            gpio_put(LED_RED_PIN, 1);
+            gpio_put(LED_GREEN_PIN, 0);
+            gpio_put(LED_BLUE_PIN, 0);
         }
         else if ((40 < temperatura && temperatura < 60) && (50 < umidade && umidade < 70) && (oxigenio > 15)) {
-            //gpio_put(LED_RED_PIN, 0);
-            //gpio_put(LED_GREEN_PIN, 1);
-            //gpio_put(LED_BLUE_PIN, 0);
-            //set_led_matrix(15, pio, sm);
+            gpio_put(LED_RED_PIN, 0);
+            gpio_put(LED_GREEN_PIN, 1);
+            gpio_put(LED_BLUE_PIN, 0);
         }
         else {
-            //gpio_put(LED_RED_PIN, 0);
-            //gpio_put(LED_GREEN_PIN, 0);
-            //gpio_put(LED_BLUE_PIN, 1);
-            //set_led_matrix(15, pio, sm);
+            gpio_put(LED_RED_PIN, 0);
+            gpio_put(LED_GREEN_PIN, 0);
+            gpio_put(LED_BLUE_PIN, 1);
         }
 
         sleep_ms(1000);
@@ -125,13 +113,7 @@ int main() {
 
 void buttons_irq(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
-    if (gpio == BUTTON_A) {
-        if (current_time - last_time_A > DEBOUNCE_TIME) {
-            // ...
-          return;
-        }
-    } 
-    else if (gpio == BUTTON_B) {
+    if (gpio == BUTTON_B) {
         if (current_time - last_time_B > DEBOUNCE_TIME) {
             reset_usb_boot(0, 0);
             last_time_B = current_time;
