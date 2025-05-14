@@ -39,6 +39,9 @@ int main() {
     stdio_init_all();
     srand(time(NULL));
     gpio_led_bitdog();
+    setup_button(BUTTON_B);
+    setup_display();
+    setup_matrix();
 
     // Inicializa a arquitetura do cyw43
     while (cyw43_arch_init()) {
@@ -68,11 +71,6 @@ int main() {
     }
 
     webserver_init();
-
-    setup_button(BUTTON_B);
-
-    setup_display();
-    setup_matrix();
 
     while (true) {
         /* 
@@ -123,35 +121,30 @@ void buttons_irq(uint gpio, uint32_t events) {
 }
 
 void update_display() {
-    ssd1306_fill(&ssd, !cor);                          // Limpa o display
-    ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);      // Desenha um retângulo
+    ssd1306_fill(&ssd, !cor);
+    ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
     char msg_temp[20];
     sprintf(msg_temp, "Temperatura %d", temperatura);
     ssd1306_draw_string(&ssd, msg_temp, 8, 6);
     char msg_umid[20];
     sprintf(msg_umid, "Umidade %d", umidade);
-    ssd1306_draw_string(&ssd, msg_umid, 8, 18);
+    ssd1306_draw_string(&ssd, msg_umid, 8, 20);
     char msg_oxig[20];
     sprintf(msg_oxig, "Oxigenio %d", oxigenio);
-    ssd1306_draw_string(&ssd, msg_oxig, 8, 33);
+    ssd1306_draw_string(&ssd, msg_oxig, 8, 34);
     
-    ssd1306_send_data(&ssd);                           // Atualiza o display
+    ssd1306_send_data(&ssd);
     sleep_ms(735);
 }
 
 void setup_display() {
-    // I2C Initialisation. Using it at 400Khz.
     i2c_init(I2C_PORT, 400 * 1000);
-
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
-    gpio_pull_up(I2C_SDA);                                        // Pull up the data line
-    gpio_pull_up(I2C_SCL);                                        // Pull up the clock line
-    //ssd1306_t ssd;                                              // Inicializa a estrutura do display
-    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display
-    ssd1306_config(&ssd);                                         // Configura o display
-    ssd1306_send_data(&ssd);                                      // Envia os dados para o display
-    // Limpa o display. O display inicia com todos os pixels apagados.
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT);
+    ssd1306_config(&ssd);
     ssd1306_fill(&ssd, false);
     ssd1306_send_data(&ssd);
 }
@@ -163,9 +156,8 @@ void setup_matrix() {
     sleep_ms(100);
 }
 
-// Inicializar os Pinos GPIO para acionamento dos LEDs da BitDogLab
+// Configura os pinos GPIO para acionamento dos LEDs da BitDogLab
 void gpio_led_bitdog(void) {
-    // Configuração dos LEDs como saída
     gpio_init(LED_BLUE_PIN);
     gpio_set_dir(LED_BLUE_PIN, GPIO_OUT);
     gpio_put(LED_BLUE_PIN, 0);
@@ -179,7 +171,7 @@ void gpio_led_bitdog(void) {
     gpio_put(LED_RED_PIN, 0);
 }
 
-// Configura o pino GPIO do botão
+// Configura o pino GPIO do botão push-up da BitDogLab
 void setup_button(uint pin) {
     gpio_init(pin);
     gpio_set_dir(pin, GPIO_IN);
