@@ -16,6 +16,7 @@
 #include "setup.h"
 #include "src/webserver.h"
 #include "lib/ws2812.h"
+#include "lib/joystick.h"
 #include "ws2812.pio.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
@@ -28,18 +29,13 @@ uint MAX_UMID = 70; // Limite de umidade
 uint MIN_UMID = 70; // Limite de umidade
 uint LIM_OXIG = 15; // Limite de oxigênio
 
-uint x_pos;
-uint y_pos;
+uint16_t x_pos;
+uint16_t y_pos;
 
 int oxygenLevels[] = {10, 15, 20, 25};
 int oxygenIndex = 0;
 
-uint x_baixo = 11;
-uint x_cima = 4080;
-uint x_parado = 2142;
-uint y_esquerda = 11;
-uint y_direita = 4080;
-uint y_parado = 1920;
+
 
 
 // ----------------------------- Escopo de funções ------------------------------
@@ -61,7 +57,8 @@ int main() {
     stdio_init_all();
     gpio_led_bitdog();
     setup_button(BUTTON_B);
-    setup_button(JOYSTICK_BTN);
+    //setup_button(JOYSTICK_BTN);
+    joystick_init();
     setup_display();
     setup_matrix();
     adc_gpio_init(JOYSTICK_Y);
@@ -148,14 +145,11 @@ int map_value_clamped(int val, int in_min, int in_max, int out_min, int out_max)
 }
 
 void le_valores() {
-    adc_select_input(0); // temperatura
-    x_pos = adc_read();
+    joystick_read_x(&x_pos); // Temperatura
+    joystick_read_y(&y_pos); // Umidade
 
-    adc_select_input(1); // Umidade
-    y_pos = adc_read();
-
-    temperatura = map_value_clamped(x_pos, x_baixo, x_cima, 20, 70);    // 20 °C – 70 °C
-    umidade = map_value_clamped(y_pos, y_esquerda, y_direita, 90, 30);  // 90% – 30%
+    temperatura = map_value_clamped(x_pos, XY_MIN_ADC, XY_MAX_ADC, 20, 70);  // 20 °C – 70 °C
+    umidade = map_value_clamped(y_pos, XY_MIN_ADC, XY_MAX_ADC, 90, 30);      // 90% – 30%
 
     // Simular oxigênio com clique
     if (gpio_get(JOYSTICK_BTN)) { // Pressionado
@@ -163,8 +157,6 @@ void le_valores() {
         sleep_ms(300); // debounce
     }
     oxigenio = oxygenLevels[oxygenIndex];
-
-    //printf("X bruto: %d | Y bruto: %d\n", x_pos, y_pos);
 }
 
 void buttons_irq(uint gpio, uint32_t events) {

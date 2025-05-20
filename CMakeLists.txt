@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME}
         src/setup.c
         lib/ssd1306.c
         lib/ws2812.c
+        lib/joystick.c
 )
 
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812.pio)

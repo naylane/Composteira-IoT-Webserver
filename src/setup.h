@@ -28,10 +28,6 @@ extern uint sm;
 extern ssd1306_t ssd;
 extern bool cor;
 
-#define JOYSTICK_X 26
-#define JOYSTICK_Y 27
-#define JOYSTICK_BTN 22
-
 extern int temperatura;
 extern int umidade;
 extern int oxigenio;
