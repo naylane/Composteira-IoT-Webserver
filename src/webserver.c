@@ -53,9 +53,9 @@ void user_request(char **request) {
         clear_matrix(pio, sm);
     }
     else if (strstr(*request, "GET /update") != NULL) {
-        temperatura = 30 + rand() % 51; // 30 a 80
-        umidade = 30 + rand() % 61;     // 30 a 90
-        oxigenio = 10 + rand() % 11;    // 10 a 20
+        temperatura = temperatura;
+        umidade = umidade;
+        oxigenio = oxigenio;
     }
 };
 
@@ -77,9 +77,7 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
     // Tratamento de request - Controle dos LEDs
     user_request(&request);
     
-    // Leitura da temperatura interna
-    //float temperature = temp_read();
-    float temperature = temperatura;;
+    float temperatura_web = temperatura;;
     float umidade_web = umidade;
     float oxigenio_web = oxigenio;
 
@@ -99,21 +97,21 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
              "body { background-color: #f0f0f0; font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }\n"
              "h1 { font-size: 64px; margin-bottom: 30px; }\n"
              "button { background-color:rgb(187, 255, 170); font-size: 36px; margin: 10px; padding: 20px 40px; border-radius: 10px; }\n"
-             ".temperature { font-size: 48px; margin-top: 30px; color: #333; }\n"
+             ".dados { font-size: 40px; margin-top: 30px; color: #333; }\n"
              "</style>\n"
              "</head>\n"
 
              "<body>\n"
-             "<h1>EmbarcaTech: Monitoramento da Composteira</h1>\n"
+             "<h1> EmbarcaTech: Monitoramento da Composteira </h1>\n"
              "<form action=\"./blue_on\"><button>Ativar aeracao</button></form>\n"
              "<form action=\"./blue_off\"><button>Desativar aeracao</button></form>\n"
              "<form action=\"./update\"><button>Atualizar dados</button></form>\n"
-             "<p class=\"temperature\">Temperatura: %.2f &deg;C</p>\n"
-             "<p class=\"temperature\">Umidade: %.2f %</p>\n"
-             "<p class=\"temperature\">Oxigenio: %.2f %</p>\n"
+             "<p class=\"dados\">Temperatura: %.2f &deg;C</p>\n"
+             "<p class=\"dados\">Umidade: %.2f %</p>\n"
+             "<p class=\"dados\">Oxigenio: %.2f %</p>\n"
              "</body>\n"
              "</html>\n",
-             temperature, umidade_web, oxigenio_web);
+             temperatura_web, umidade_web, oxigenio_web);
 
     // Escreve dados para envio (mas não os envia imediatamente).
     tcp_write(tpcb, html, strlen(html), TCP_WRITE_FLAG_COPY);
