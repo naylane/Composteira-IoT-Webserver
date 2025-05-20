@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"     // Biblioteca para arquitetura Wi-Fi da Pico com CYW43
@@ -20,11 +19,34 @@
 #include "ws2812.pio.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
-#define WIFI_SSID "SEU_SSID"
-#define WIFI_PASSWORD "SUA_SENHA"
+#define WIFI_SSID "Familia-2.4G"
+#define WIFI_PASSWORD "31261112"
+
+uint MAX_TEMP = 60; // Limite máximo de temperatura
+uint MIN_TEMP = 40; // Limite mínimo de temperatura
+uint MAX_UMID = 70; // Limite de umidade
+uint MIN_UMID = 70; // Limite de umidade
+uint LIM_OXIG = 15; // Limite de oxigênio
+
+uint x_pos;
+uint y_pos;
+
+int oxygenLevels[] = {10, 15, 20, 25};
+int oxygenIndex = 0;
+
+uint x_baixo = 11;
+uint x_cima = 4080;
+uint x_parado = 2142;
+uint y_esquerda = 11;
+uint y_direita = 4080;
+uint y_parado = 1920;
+
 
 // ----------------------------- Escopo de funções ------------------------------
 
+int clamp(int val, int min_val, int max_val);
+int map_value_clamped(int val, int in_min, int in_max, int out_min, int out_max);
+void le_valores();
 void buttons_irq(uint gpio, uint32_t events);
 void update_display();
 void setup_display();
@@ -37,11 +59,14 @@ void setup_button(uint pin);
 int main() {
     // Configurações
     stdio_init_all();
-    srand(time(NULL));
     gpio_led_bitdog();
     setup_button(BUTTON_B);
+    setup_button(JOYSTICK_BTN);
     setup_display();
     setup_matrix();
+    adc_gpio_init(JOYSTICK_Y);
+    adc_gpio_init(JOYSTICK_X);
+    adc_init();
 
     // Inicializa a arquitetura do cyw43
     while (cyw43_arch_init()) {
@@ -58,12 +83,13 @@ int main() {
 
     // Conectar à rede WiFI - fazer um loop até que esteja conectado
     printf("Conectando ao Wi-Fi...\n");
-    while (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 20000)) {
+    while (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+        printf("%d\n", cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000));
         printf("Falha ao conectar ao Wi-Fi\n");
         sleep_ms(100);
         return -1;
     }
-    printf("Conectado ao Wi-Fi\n");
+    printf("Conectado ao Wi-Fi!\n");
 
     // Caso seja a interface de rede padrão - imprimir o IP do dispositivo.
     if (netif_default) {
@@ -80,14 +106,15 @@ int main() {
         */
         cyw43_arch_poll(); // Necessário para manter o Wi-Fi ativo
         
+        le_valores();
         update_display();
 
-        if ((temperatura > 60) || (umidade > 70) || (oxigenio < 15)) {
+        if ((temperatura > MAX_TEMP) || (umidade > MAX_UMID) || (oxigenio < LIM_OXIG)) {
             gpio_put(LED_RED_PIN, 1);
             gpio_put(LED_GREEN_PIN, 0);
             gpio_put(LED_BLUE_PIN, 0);
         }
-        else if ((40 < temperatura && temperatura < 60) && (50 < umidade && umidade < 70) && (oxigenio > 15)) {
+        else if ((MIN_TEMP < temperatura && temperatura < MAX_TEMP) && (MIN_UMID < umidade && umidade < MAX_UMID) && (oxigenio > LIM_OXIG)) {
             gpio_put(LED_RED_PIN, 0);
             gpio_put(LED_GREEN_PIN, 1);
             gpio_put(LED_BLUE_PIN, 0);
@@ -108,6 +135,37 @@ int main() {
 
 
 // ---------------------------------- Funções ------------------------------------
+
+int clamp(int val, int min_val, int max_val) {
+    if (val < min_val) return min_val;
+    if (val > max_val) return max_val;
+    return val;
+}
+
+int map_value_clamped(int val, int in_min, int in_max, int out_min, int out_max) {
+    val = clamp(val, in_min, in_max);
+    return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+void le_valores() {
+    adc_select_input(0); // temperatura
+    x_pos = adc_read();
+
+    adc_select_input(1); // Umidade
+    y_pos = adc_read();
+
+    temperatura = map_value_clamped(x_pos, x_baixo, x_cima, 20, 70);    // 20 °C – 70 °C
+    umidade = map_value_clamped(y_pos, y_esquerda, y_direita, 90, 30);  // 90% – 30%
+
+    // Simular oxigênio com clique
+    if (gpio_get(JOYSTICK_BTN)) { // Pressionado
+        oxygenIndex = (oxygenIndex + 1) % 4;
+        sleep_ms(300); // debounce
+    }
+    oxigenio = oxygenLevels[oxygenIndex];
+
+    //printf("X bruto: %d | Y bruto: %d\n", x_pos, y_pos);
+}
 
 void buttons_irq(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
