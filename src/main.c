@@ -35,9 +35,6 @@ uint16_t y_pos;
 int oxygenLevels[] = {10, 15, 20, 25};
 int oxygenIndex = 0;
 
-
-
-
 // ----------------------------- Escopo de funções ------------------------------
 
 int clamp(int val, int min_val, int max_val);
@@ -57,13 +54,10 @@ int main() {
     stdio_init_all();
     gpio_led_bitdog();
     setup_button(BUTTON_B);
-    //setup_button(JOYSTICK_BTN);
     joystick_init();
+    gpio_set_irq_enabled_with_callback(JOYSTICK_BTN, GPIO_IRQ_EDGE_FALL, true, &buttons_irq);
     setup_display();
     setup_matrix();
-    adc_gpio_init(JOYSTICK_Y);
-    adc_gpio_init(JOYSTICK_X);
-    adc_init();
 
     // Inicializa a arquitetura do cyw43
     while (cyw43_arch_init()) {
@@ -150,21 +144,23 @@ void le_valores() {
 
     temperatura = map_value_clamped(x_pos, XY_MIN_ADC, XY_MAX_ADC, 20, 70);  // 20 °C – 70 °C
     umidade = map_value_clamped(y_pos, XY_MIN_ADC, XY_MAX_ADC, 90, 30);      // 90% – 30%
-
-    // Simular oxigênio com clique
-    if (gpio_get(JOYSTICK_BTN)) { // Pressionado
-        oxygenIndex = (oxygenIndex + 1) % 4;
-        sleep_ms(300); // debounce
-    }
-    oxigenio = oxygenLevels[oxygenIndex];
 }
 
 void buttons_irq(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
+
     if (gpio == BUTTON_B) {
         if (current_time - last_time_B > DEBOUNCE_TIME) {
             reset_usb_boot(0, 0);
             last_time_B = current_time;
+            return;
+        }
+    } 
+    else if (gpio == JOYSTICK_BTN) {
+        if (current_time - last_time_joy_btn > DEBOUNCE_TIME) {
+            oxygenIndex = (oxygenIndex + 1) % 4;
+            oxigenio = oxygenLevels[oxygenIndex];
+            last_time_joy_btn = current_time;
             return;
         }
     }

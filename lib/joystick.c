@@ -1,5 +1,7 @@
 #include "joystick.h"
 
+uint32_t last_time_joy_btn = 0;
+
 void joystick_init() {
     adc_init();
     adc_gpio_init(JOYSTICK_X);
