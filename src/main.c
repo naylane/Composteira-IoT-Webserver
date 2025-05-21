@@ -8,7 +8,6 @@
 
 #include "hardware/clocks.h"
 #include "hardware/adc.h"
-#include "hardware/i2c.h"
 
 #include "lwip/pbuf.h"           // Lightweight IP stack - manipulação de buffers de pacotes de rede
 #include "lwip/tcp.h"            // Lightweight IP stack - fornece funções e estruturas para trabalhar com o protocolo TCP
@@ -22,14 +21,8 @@
 #include "ws2812.pio.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
-#define WIFI_SSID "Familia-2.4G"
-#define WIFI_PASSWORD "31261112"
-
-uint MAX_TEMP = 60; // Limite máximo de temperatura
-uint MIN_TEMP = 40; // Limite mínimo de temperatura
-uint MAX_UMID = 70; // Limite de umidade
-uint MIN_UMID = 50; // Limite de umidade
-uint LIM_OXIG = 15; // Limite de oxigênio
+#define WIFI_SSID "SEU_SSID"
+#define WIFI_PASSWORD "SUA_SENHA"
 
 uint16_t x_pos;
 uint16_t y_pos;
@@ -44,7 +37,6 @@ int map_value_clamped(int val, int in_min, int in_max, int out_min, int out_max)
 void le_valores();
 void buttons_irq(uint gpio, uint32_t events);
 void update_display();
-void setup_display();
 void setup_matrix();
 void gpio_led_bitdog(void);
 void setup_button(uint pin);
@@ -145,10 +137,12 @@ int clamp(int val, int min_val, int max_val) {
     return val;
 }
 
+
 int map_value_clamped(int val, int in_min, int in_max, int out_min, int out_max) {
     val = clamp(val, in_min, in_max);
     return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
 
 void le_valores() {
     joystick_read_x(&x_pos); // Temperatura
@@ -157,6 +151,7 @@ void le_valores() {
     temperatura = map_value_clamped(x_pos, XY_MIN_ADC, XY_MAX_ADC, 20, 70);  // 20 °C – 70 °C
     umidade = map_value_clamped(y_pos, XY_MIN_ADC, XY_MAX_ADC, 90, 30);      // 90% – 30%
 }
+
 
 void buttons_irq(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
@@ -178,6 +173,7 @@ void buttons_irq(uint gpio, uint32_t events) {
     }
 }
 
+
 void update_display() {
     ssd1306_fill(&ssd, !cor);
     ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
@@ -195,17 +191,6 @@ void update_display() {
     sleep_ms(735);
 }
 
-void setup_display() {
-    i2c_init(I2C_PORT, 400 * 1000);
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT);
-    ssd1306_config(&ssd);
-    ssd1306_fill(&ssd, false);
-    ssd1306_send_data(&ssd);
-}
 
 void setup_matrix() {
     uint offset = pio_add_program(pio, &pio_matrix_program);
@@ -213,6 +198,7 @@ void setup_matrix() {
     clear_matrix(pio, sm);
     sleep_ms(100);
 }
+
 
 // Configura os pinos GPIO para acionamento dos LEDs da BitDogLab
 void gpio_led_bitdog(void) {
@@ -228,6 +214,7 @@ void gpio_led_bitdog(void) {
     gpio_set_dir(LED_RED_PIN, GPIO_OUT);
     gpio_put(LED_RED_PIN, 0);
 }
+
 
 // Configura o pino GPIO do botão push-up da BitDogLab
 void setup_button(uint pin) {

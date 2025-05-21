@@ -19,12 +19,11 @@ static uint32_t last_time_B = 0;    // Tempo da última interrupção do botão 
 extern PIO pio;
 extern uint sm;
 
-#define I2C_PORT i2c1
-#define I2C_SDA 14
-#define I2C_SCL 15
-#define endereco 0x3C
-extern ssd1306_t ssd;
-extern bool cor;
+#define MAX_TEMP 60 // Limite máximo de temperatura
+#define MIN_TEMP 40 // Limite mínimo de temperatura
+#define MAX_UMID 70 // Limite máximo de umidade
+#define MIN_UMID 50 // Limite mínimo de umidade
+#define LIM_OXIG 15 // Limite de oxigênio
 
 extern int temperatura;
 extern int umidade;

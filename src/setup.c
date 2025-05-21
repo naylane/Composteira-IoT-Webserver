@@ -8,4 +8,4 @@ bool cor = true;
 
 int temperatura = 39;
 int umidade = 49;
-int oxigenio = 15;
+int oxigenio = 20;
