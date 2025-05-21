@@ -35,6 +35,7 @@ add_executable(${PROJECT_NAME}
         lib/ssd1306.c
         lib/ws2812.c
         lib/joystick.c
+        lib/buzzer.c
 )
 
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812.pio)
@@ -49,6 +50,8 @@ target_link_libraries(${PROJECT_NAME}
         hardware_adc
         hardware_i2c
         hardware_pio
+        hardware_pwm
+        hardware_clocks
         pico_cyw43_arch_lwip_threadsafe_background
 )
 

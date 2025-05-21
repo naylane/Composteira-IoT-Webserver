@@ -15,8 +15,6 @@
 #define DEBOUNCE_TIME 200000        // Tempo para debounce em ms
 static uint32_t last_time_B = 0;    // Tempo da última interrupção do botão B
 
-#define BUZZER_PIN 10
-
 #define WS2812_PIN 7
 extern PIO pio;
 extern uint sm;

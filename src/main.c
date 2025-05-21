@@ -6,6 +6,7 @@
 #include "pico/cyw43_arch.h"     // Biblioteca para arquitetura Wi-Fi da Pico com CYW43
 #include "pico/bootrom.h"
 
+#include "hardware/clocks.h"
 #include "hardware/adc.h"
 #include "hardware/i2c.h"
 
@@ -17,6 +18,7 @@
 #include "src/webserver.h"
 #include "lib/ws2812.h"
 #include "lib/joystick.h"
+#include "lib/buzzer.h"
 #include "ws2812.pio.h"
 
 // Credenciais WIFI - Troque pelas suas credenciais
@@ -26,7 +28,7 @@
 uint MAX_TEMP = 60; // Limite máximo de temperatura
 uint MIN_TEMP = 40; // Limite mínimo de temperatura
 uint MAX_UMID = 70; // Limite de umidade
-uint MIN_UMID = 70; // Limite de umidade
+uint MIN_UMID = 50; // Limite de umidade
 uint LIM_OXIG = 15; // Limite de oxigênio
 
 uint16_t x_pos;
@@ -55,9 +57,18 @@ int main() {
     gpio_led_bitdog();
     setup_button(BUTTON_B);
     joystick_init();
+    buzzer_setup_pwm(BUZZER_PIN, 4000);
     gpio_set_irq_enabled_with_callback(JOYSTICK_BTN, GPIO_IRQ_EDGE_FALL, true, &buttons_irq);
     setup_display();
     setup_matrix();
+
+    // Configura clock do sistema
+    if (set_sys_clock_khz(128000, false)) {
+        printf("Configuração do clock do sistema completa!\n");
+    } else {
+        printf("Configuração do clock do sistema falhou!\n");
+        return -1;
+    }
 
     // Inicializa a arquitetura do cyw43
     while (cyw43_arch_init()) {
@@ -104,6 +115,7 @@ int main() {
             gpio_put(LED_RED_PIN, 1);
             gpio_put(LED_GREEN_PIN, 0);
             gpio_put(LED_BLUE_PIN, 0);
+            buzzer_play(BUZZER_PIN, 10, 500, 1);
         }
         else if ((MIN_TEMP < temperatura && temperatura < MAX_TEMP) && (MIN_UMID < umidade && umidade < MAX_UMID) && (oxigenio > LIM_OXIG)) {
             gpio_put(LED_RED_PIN, 0);
