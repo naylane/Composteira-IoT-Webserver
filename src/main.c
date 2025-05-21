@@ -115,7 +115,7 @@ int main() {
             gpio_put(LED_RED_PIN, 1);
             gpio_put(LED_GREEN_PIN, 0);
             gpio_put(LED_BLUE_PIN, 0);
-            buzzer_play(BUZZER_PIN, 10, 500, 1);
+            buzzer_play(BUZZER_PIN, 2, 500, 1000);
         }
         else if ((MIN_TEMP < temperatura && temperatura < MAX_TEMP) && (MIN_UMID < umidade && umidade < MAX_UMID) && (oxigenio > LIM_OXIG)) {
             gpio_put(LED_RED_PIN, 0);
